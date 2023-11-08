@@ -1,59 +1,33 @@
 import './App.css';
+import Post from './Post'
+import Header from './Header'
+import { Route, Routes } from 'react-router-dom';
+import Layout from './Layout';
+import IndexPage from './pages/IndexPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
   return (
-    <main>
-      <header>
-        <a href='' className='logo'>MyBlog</a>
-        <nav>
-          <a href=''>Login</a>
-          <a href=''>Register</a>
-        </nav>
-      </header>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={    
+          <IndexPage/>
 
-      <div className='post'>
-      <div className='image'>
-        <img src="https://techcrunch.com/wp-content/uploads/2023/04/Switch_ZeldaTotK_MediaPreview_SCRN_16.jpeg?w=990&crop=1" alt='reference'></img>
-      </div>
-        <div className='texts'>
-          <h2>Nintendo confirms live-action Zelda movie is in the works</h2>
-          <p className="info">
-            <a className="author">Mario Umaña</a>
-            <time>2023-11-07 23:52</time>
-          </p>
-          <p className='summary'>Zelda fans already got a stellar new game with “Tears of the Kingdom” this year, but Nintendo just dropped another exciting nugget of news</p>
-        </div>
-      </div>
+        }/>
 
-      <div className='post'>
-      <div className='image'>
-        <img src="https://techcrunch.com/wp-content/uploads/2023/04/Switch_ZeldaTotK_MediaPreview_SCRN_16.jpeg?w=990&crop=1" alt='reference'></img>
-      </div>
-        <div className='texts'>
-          <h2>Nintendo confirms live-action Zelda movie is in the works</h2>
-          <p className="info">
-            <a className="author">Mario Umaña</a>
-            <time>2023-11-07 23:52</time>
-          </p>
-          <p className='summary'>Zelda fans already got a stellar new game with “Tears of the Kingdom” this year, but Nintendo just dropped another exciting nugget of news</p>
-        </div>
-      </div>
+        <Route path={'/login'} element={
+          <LoginPage/>
+        } 
+        />
+        <Route path={'/register'} element={
+          <RegisterPage />
+        }
+        />
+        
+         </Route>   
+    </Routes>
 
-      <div className='post'>
-      <div className='image'>
-        <img src="https://techcrunch.com/wp-content/uploads/2023/04/Switch_ZeldaTotK_MediaPreview_SCRN_16.jpeg?w=990&crop=1" alt='reference'></img>
-      </div>
-        <div className='texts'>
-          <h2>Nintendo confirms live-action Zelda movie is in the works</h2>
-          <p className="info">
-            <a className="author">Mario Umaña</a>
-            <time>2023-11-07 23:52</time>
-          </p>
-          <p className='summary'>Zelda fans already got a stellar new game with “Tears of the Kingdom” this year, but Nintendo just dropped another exciting nugget of news</p>
-        </div>
-      </div>
-      
-    </main>
   );
 }
 
