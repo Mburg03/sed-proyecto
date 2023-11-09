@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 export default function LoginPage(){
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [redirect, setRedirect] = useState(false);
+    const [redirect, setRedirect] = useState(false); // redireccionar a Home
 
     async function login(ev){
         ev.preventDefault();
@@ -14,17 +14,17 @@ export default function LoginPage(){
             body: JSON.stringify({username, password}),
             headers: {'Content-Type': 'application/json'},
             credentials: 'include'
-        });// creando envio a la api de login de usuario
+        }); // creando envio a la api de login de usuario
         
         if (response.ok){
-            setRedirect(true);
+            setRedirect(true); // cambiar redireccionar hacia Home si el inicio de sesión es response(200)
         } else {
             alert('Contraseña y/o usuario incorrecto.')
         }
     }
 
     if (redirect){
-        return <Navigate to ={'/'} /> 
+        return <Navigate to ={'/'} />  // navegando hacia Home
     }
     return(
         <form className="login" onSubmit={login}>
