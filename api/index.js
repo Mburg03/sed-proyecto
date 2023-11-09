@@ -40,20 +40,35 @@ app.post('/login', async (req,res) => {
         res.cookie('token', token).json({
           id:userDoc._id,
           username,
-        });2 // mandando el token no como json, sino como cookies hacia el usuario
+        });// mandando el token no como json, sino como cookies hacia el usuario
       });
     } else {
       res.status(400).json('credenciales incorrectas.');
     }
-  });
+});
 
 // recibiendo las cookies del usuario
 app.get('/profile', (req, res) => {
-    const {token} = req.cookies;
-    jwt.verify(token, secret, {}, (err, info) => {
-        if (err) throw err;
-        res.json(info); // información del usuario que va dentro del token
-    })
+    const { token } = req.cookies;
+
+    if (!token) {
+        // Si no hay token presente, aún consideramos la solicitud exitosa, pero devolvemos un objeto vacío en lugar de lanzar un error
+        return res.json({});
+    }
+
+    jwt.verify(token, secret, (err, info) => {
+        if (err) {
+            // Si hay un error al verificar el token, aún consideramos la solicitud exitosa, pero devolvemos un objeto vacío en lugar de lanzar un error
+            return res.json({});
+        }
+
+        // Si la verificación del token es exitosa, devolvemos la información del usuario
+        res.json(info);
+    });
+});
+
+app.post('/logout', (req,res) => {
+    res.clearCookie('token').json('ok');
 });
 
 app.listen(4000);
