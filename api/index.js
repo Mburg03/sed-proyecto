@@ -3,14 +3,16 @@ const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const User = require('./models/User');
+const Post = require('./models/Post');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');  // token para inicio de sesión
 const multer = require('multer');
 const uploadMiddlewares = multer({dest: './uploads/'}); // directorio en donde se guardaran los posts
-
+const fs = require('fs');
 const salt =bcrypt.genSaltSync(10); // encriptación de la contraseña, método
 const secret = 'asdasdasdasdasge'; 
 const cookieParser = require('cookie-parser'); // requerimiento para poder recibir cookies y leerlas
+
 
 app.use(cors({credentials:true, origin:'http://localhost:3000'}))
 app.use(express.json());
@@ -49,6 +51,7 @@ app.post('/login', async (req,res) => {
     }
 });
 
+
 // recibiendo las cookies del usuario
 app.get('/profile', (req, res) => {
     const { token } = req.cookies;
@@ -63,8 +66,22 @@ app.post('/logout', (req,res) => {
     res.clearCookie('token').json('ok');
 });
 
-app.post('/post', uploadMiddlewares.single('file'),(req, res) => {
-    res.json({files:req.file});
+app.post('/post', uploadMiddlewares.single('file'), async (req, res) => {
+    const {originalname, path} = req.file;
+    const parts = originalname.split('.');
+    const ext = parts[parts.length -1];
+    const newPath = path+'.'+ext;
+    fs.renameSync(path, newPath);
+    const {title, summary, content} = req.body;
+
+    const postDoc = await Post.create({
+      title,
+      summary,
+      content, 
+      cover:newPath
+    })
+
+    res.json(postDoc);
 });
 
 app.listen(4000);
