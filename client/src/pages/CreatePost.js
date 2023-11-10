@@ -24,7 +24,7 @@ export default function CreatePost() {
     const [content, setContent] = useState('');
     const [files, setFile] = useState('');
 
-    function createNewPost(ev){
+    async function createNewPost(ev){
         const data = new FormData();
         data.set("title", title);
         data.set("summary", summary);
@@ -32,10 +32,11 @@ export default function CreatePost() {
         data.set("file", files[0])
         ev.preventDefault();
     
-        fetch('http://localhost:4000/post', {
+        const response = await fetch('http://localhost:4000/post', {
             method: 'POST',
             body: data
         });
+        console.log(await response.json());
     }
 
     return (

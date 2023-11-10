@@ -14,7 +14,7 @@ export default function Header() {
           setUserInfo(userInfo);
         }); // tomando la información del usuario que ha iniciado sesión
     });
-  });
+  }, []);
 
 
   function logout() {

@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');  // token para inicio de sesión
+const multer = require('multer');
+const uploadMiddlewares = multer({dest: './uploads/'}); // directorio en donde se guardaran los posts
 
 const salt =bcrypt.genSaltSync(10); // encriptación de la contraseña, método
 const secret = 'asdasdasdasdasge'; 
@@ -51,28 +53,18 @@ app.post('/login', async (req,res) => {
 app.get('/profile', (req, res) => {
     const { token } = req.cookies;
 
-    if (!token) {
-        // Si no hay token presente, aún consideramos la solicitud exitosa, pero devolvemos un objeto vacío en lugar de lanzar un error
-        return res.json({});
-    }
-
-    jwt.verify(token, secret, (err, info) => {
-        if (err) {
-            // Si hay un error al verificar el token, aún consideramos la solicitud exitosa, pero devolvemos un objeto vacío en lugar de lanzar un error
-            return res.json({});
-        }
-
-        // Si la verificación del token es exitosa, devolvemos la información del usuario
+    jwt.verify(token, secret, {}, (err,info) => {
+        if (err) throw err;
         res.json(info);
-    });
+      });
 });
 
 app.post('/logout', (req,res) => {
     res.clearCookie('token').json('ok');
 });
 
-app.post('/post', (req, res) => {
-    
+app.post('/post', uploadMiddlewares.single('file'),(req, res) => {
+    res.json({files:req.file});
 });
 
 app.listen(4000);
