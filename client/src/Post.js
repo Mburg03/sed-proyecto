@@ -1,16 +1,19 @@
-export default function Post(){
+import {format} from 'date-fns';
+
+export default function Post({title, summary, cover, content,createdAt, author}){
+
     return(
         <div className='post'>
         <div className='image'>
-        <img src="https://techcrunch.com/wp-content/uploads/2023/04/Switch_ZeldaTotK_MediaPreview_SCRN_16.jpeg?w=990&crop=1" alt='reference'></img>
+        <img src={'http://localhost:4000/'+cover} alt='reference'></img>
         </div>
         <div className='texts'>
-            <h2>Nintendo confirms live-action Zelda movie is in the works</h2>
+            <h2>{title}</h2>
             <p className="info">
-            <a className="author">Mario Umaña</a>
-            <time>2023-11-07 23:52</time>
+            <a className="author">{author.username}</a>
+            <time>{format(new Date(createdAt), 'MMM d, yyyy HH:mm')}</time>
             </p>
-            <p className='summary'>Zelda fans already got a stellar new game with “Tears of the Kingdom” this year, but Nintendo just dropped another exciting nugget of news</p>
+            <p className='summary'>{summary}</p>
         </div>
         </div>
         

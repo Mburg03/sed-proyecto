@@ -14,6 +14,7 @@ export default function Header() {
           setUserInfo(userInfo);
         }); // tomando la información del usuario que ha iniciado sesión
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
 
