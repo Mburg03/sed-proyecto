@@ -27,17 +27,91 @@ header {
 header a {
   text-decoration: none;
   color: inherit;
-  
 }
+
+
+header a.login{
+  display: inline-block;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #0d7fca; /* Button color */
+  border: 2px solid #ffffff; /* Border color */
+  border-radius: 8px; /* Rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+header a.login:hover{
+  background-color: #646464;
+}
+
+header a.register{
+  display: inline-block;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #0d7fca; /* Button color */
+  border: 2px solid #ffffff; /* Border color */
+  border-radius: 8px; /* Rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+header a.register:hover{
+  background-color: #646464;
+}
+
 
 header a.logo{
   font-weight: bold;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+}
+
+header a.create-post{
+  display: inline-block;
+  padding: 8px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 15px;
+  color: #ffffff;
+  background-color: #0d7fca; /* Button color */
+  border: 2px solid #ffffff; /* Border color */
+  border-radius: 8px; /* Rounded corners */
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+header a.create-post:hover{
+  background-color: #063859;
 }
 
 header nav {
   display: flex;
+  text-align: center;
   gap: 20px;
+
+}
+
+
+
+header nav button.logout{
+  background-color: #d9534f;
+  color: #ffffff;
+  padding: 8px 0px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+header nav button.logout:hover{
+  background-color: #8d1414;
+
 }
 
 div.post{
@@ -153,4 +227,10 @@ div.post-page div.author{
 div.post-page div.content p{
   line-height: 1.6rem;
 
+}
+
+div.posts-index div.welcome-text{
+  border-bottom:1px solid #e1e1e1;
+  margin-bottom: 40px;
+  font-size: .9rem;
 }

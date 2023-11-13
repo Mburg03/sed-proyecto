@@ -35,14 +35,14 @@ export default function Header() {
       <nav>
         {username && (
           <>
-            <Link to="/create">Crear un nuevo post</Link>
-            <button onClick={logout}>Cerrar sesión ({username})</button>
+            <Link className='create-post' to="/create">Crear un nuevo post</Link>
+            <button className='logout' onClick={logout}>Cerrar sesión ({username})</button>
           </>// este codigo corre en caso que el usuario si ha iniciado sesión, de lo contrario !username es ejecutado
         )}
         {!username && (
           <>
-            <Link to='/login'>Iniciar sesión</Link>
-            <Link to='/register'>Registrarse</Link>
+            <Link to='/login' className="login">Iniciar sesión</Link>
+            <Link to='/register' className="register">Registrarse</Link>
           </>
         )}
       </nav>
