@@ -36,7 +36,7 @@ export default function Header() {
         {username && (
           <>
             <Link to="/create">Crear un nuevo post</Link>
-            <a onClick={logout}>Cerrar sesión ({username})</a>
+            <button onClick={logout}>Cerrar sesión ({username})</button>
           </>// este codigo corre en caso que el usuario si ha iniciado sesión, de lo contrario !username es ejecutado
         )}
         {!username && (
