@@ -39,9 +39,12 @@ export default function CreatePost() {
             body: data,
             credentials: 'include'
         });
-        if (response.ok){
+        if (response.status !== 200) {
+            alert('Tu post no pudo ser publicado, intentá revisar los campos que llenaste.') // el error será diferente a 200 cuando ya haya un usuario registradio con los mismos campos
+        } else {
+            alert('Tu post ha sido creado.')
             setRedirect(true);
-        };
+        }
     }
 
     if (redirect){
