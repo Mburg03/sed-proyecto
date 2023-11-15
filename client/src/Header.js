@@ -3,46 +3,65 @@ import { Link } from "react-router-dom";
 import { UserContext } from "./UserContext";
 
 export default function Header() {
-  const { setUserInfo, userInfo } = useContext(UserContext);
+  const { setUserInfo, userInfo, isLoading, setIsLoading } = useContext(UserContext);
+  const isAdmin = userInfo?.userType === "Admin";
+
   useEffect(() => {
-    // se usa :4000 ya que estamos agarrando información de la api, no enviando
+    setIsLoading(true);
     fetch('http://localhost:4000/profile', {
       credentials: 'include'
-    }).then(response => {
-      response.json().then(
-        userInfo => {
-          setUserInfo(userInfo);
-        }); // tomando la información del usuario que ha iniciado sesión
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    })
+      .then(response => response.json())
+      .then(userInfo => {
+        setUserInfo(userInfo);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error("Error al cargar los datos del usuario:", error);
+        setIsLoading(false);
+      });
+  }, [setUserInfo, setIsLoading]);
 
 
   function logout() {
     fetch('http://localhost:4000/logout', {
       credentials: 'include',
       method: 'POST'
+    }).then(() => {
+      setUserInfo({}); // Restablecer userInfo
+      // Redirigir al usuario a la página de inicio o de login usando React Router
+      // history.push('/login'); // Asumiendo que tienes acceso a 'history' de React Router
+    }).catch(error => {
+      console.error("Error al cerrar sesión:", error);
     });
-
-    setUserInfo(null);
   }
 
+
   const username = userInfo?.username;
+
+  if (isLoading) {
+    return <div>Cargando...</div>; // Mostrar un mensaje de carga
+  }
 
   return (
     <header>
       <Link to='/' className='logo'>Blog SED</Link>
       <nav>
-        {username && (
+        {username && !isAdmin && (
           <>
             <Link className='create-post' to="/create">Crear un nuevo post</Link>
             <button className='logout' onClick={logout}>Cerrar sesión ({username})</button>
-          </>// este codigo corre en caso que el usuario si ha iniciado sesión, de lo contrario !username es ejecutado
+          </>
         )}
         {!username && (
           <>
             <Link to='/login' className="login">Iniciar sesión</Link>
             <Link to='/register' className="register">Registrarse</Link>
+          </>
+        )}
+        {username && isAdmin && (
+          <>
+            <button className='logout-admin' onClick={logout}>Cerrar sesión ({username})</button>
           </>
         )}
       </nav>

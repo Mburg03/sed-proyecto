@@ -231,3 +231,89 @@ div.posts-index div.welcome-text{
   margin-bottom: 40px;
   font-size: .9rem;
 }
+
+
+.signup-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.radio-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px; 
+}
+
+input[type="radio"] {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+label {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+label.register-as-label{
+  margin-bottom: 10px;
+}
+
+div.not-logged {
+  display: flex;
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+
+  text-align: center;
+}
+
+button.logout-admin{
+  background-color: #d9534f;
+  color: #ffffff;
+  padding: 20px 10px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+}
+
+ button.logout-admin:hover{
+  background-color: #8d1414;
+
+}
+
+
+div.admin-display p.welcome-admin-text{
+  font-size: .9rem;
+}
+
+
+hr{
+  border: 0; /* Remove the default border */
+  height: 1.5px; /* Set the height of the line */
+  background-color:#f4eded;
+}
+
+div.users-information {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+table,
+th,
+td {
+  border: 1px solid #ddd !important;
+  padding: 5px;
+  border-collapse: collapse; 
+
+}
+
+th, td {
+  text-align: center; /* Centra el contenido de las celdas */
+  padding: 8px; /* Opcional: para un poco de espacio interior en las celdas */
+}
