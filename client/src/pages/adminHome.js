@@ -5,17 +5,29 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 export default function AdminHome({ userData }) {
     const [data, setData] = useState([]);
+    const [postData, setPostData] = useState([]);
 
     useEffect(() => {
         getAllUser();
+        getAllPost();
     }, []);
 
     const getAllUser = () => {
         fetch("http://localhost:4000/getAllUser", {
             method: "GET"
         }).then((res) => res.json()).then((data) => {
-            console.log(data, "userData")
+            console.log(data, "userData");
             setData(data.data);
+        });
+    };
+
+
+    const getAllPost = () => {
+        fetch("http://localhost:4000/getAllPosts", {
+            method: "GET"
+        }).then((res) => res.json()).then((data) => {
+            console.log(data, "postData");
+            setPostData(data.data);
         });
     };
 
@@ -34,6 +46,27 @@ export default function AdminHome({ userData }) {
             }).then((res) => res.json()).then((data) => {
                 alert(data.data);
                 getAllUser();
+            });
+        } else {
+
+        }
+    };
+
+    const deletePost = (id) => {
+        if (window.confirm("¿Estás seguro de eliminar este post?")) {
+            fetch("http://localhost:4000/deletePost", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                },
+                body: JSON.stringify({
+                    postid: id
+                }),
+            }).then((res) => res.json()).then((data) => {
+                alert(data.data);
+                getAllPost();
             });
         } else {
 
@@ -63,7 +96,31 @@ export default function AdminHome({ userData }) {
                     )
                 })}
             </table>
-        </div>
+            <div className="posts-information">
+                <h3>Información de posts registrados</h3>
+                <table style={{ width: 1000 }}>
+                    <tr>
+                        <th>Id</th>
+                        <th>Autor</th>
+                        <th>Creación</th>
+                        <th>Titulo</th>
+                        <th>Eliminar</th>
+                    </tr>
+                    {postData.map(i => {
+                        return (
+                            <tr>
+                                <td>{i._id}</td>
+                                <td>{i.author}</td>
+                                <td>{i.createdAt}</td>
+                                <td>{i.title}</td>
+                                <td><FontAwesomeIcon icon={faTrash} onClick={() => deletePost(i._id)}
+                                /></td>
+                            </tr>
+                        )
+                    })}
+                </table>
 
+            </div>
+        </div>
     );
 }

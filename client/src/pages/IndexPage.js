@@ -25,10 +25,18 @@ export default function IndexPage() {
                 <div className="admin-display">
                     <p className="welcome-admin-text">Bienvenido administrador, <b>@{username}</b></p>
                     <hr></hr>
-                    <AdminHome/>
+                    <AdminHome />
+                    <h3>Posts autorizados</h3>
+                    <div className="admin-posts-display">
+                        {posts.length > 0 && posts.map(post => (
+                            <Post key={post.id} {...post} />
+                        ))}
+                    </div>
+
+
                 </div>
             );
-          
+
 
         } else {
             content = (

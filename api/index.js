@@ -119,14 +119,36 @@ app.get("/getAllUser", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+app.get("/getAllPosts", async (req, res) => {
+  try {
+    const allPosts = await Post.find({});
+    res.send({ status: "ok", data: allPosts })
+  } catch (error) {
+    console.log(error);
+  }
 })
+
 
 app.post("/deleteUser", async (req, res) => {
   const { userid } = req.body;
   try {
     const result = await User.deleteOne({ _id: userid });
     console.log(result);
-    res.send({ status: "Ok", data: "Deleted" });
+    res.send({ status: "Ok", data: "Eliminado" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ status: "Error", data: error.message });
+  }
+});
+
+app.post("/deletePost", async (req, res) => {
+  const { postid } = req.body;
+  try {
+    const result = await Post.deleteOne({ _id: postid });
+    console.log(result);
+    res.send({ status: "Ok", data: "Eliminado" });
   } catch (error) {
     console.log(error);
     res.status(500).send({ status: "Error", data: error.message });

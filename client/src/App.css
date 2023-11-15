@@ -285,11 +285,20 @@ button.logout-admin{
 
 }
 
+div.admin-display{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
 div.admin-display p.welcome-admin-text{
   font-size: .9rem;
 }
 
+div.admin-display div.admin-posts-display{
+  margin-top: 30px;
+}
 
 hr{
   border: 0; /* Remove the default border */
@@ -316,4 +325,12 @@ td {
 th, td {
   text-align: center; /* Centra el contenido de las celdas */
   padding: 8px; /* Opcional: para un poco de espacio interior en las celdas */
+}
+
+div.posts-information{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-top: 20px;
 }
