@@ -19,6 +19,8 @@ const formats = [
     'link', 'image'
 ];
 
+
+
 export default function CreatePost() {
     const [title, SetTitle] = useState('');
     const [summary, setSummary] = useState('');
@@ -26,28 +28,28 @@ export default function CreatePost() {
     const [files, setFile] = useState('');
     const [redirect, setRedirect] = useState(false);
 
-    async function createNewPost(ev){
+    async function createNewPost(ev) {
         const data = new FormData();
         data.set("title", title);
         data.set("summary", summary);
         data.set("content", content);
-        data.set("file", files[0])
+        data.set("file", files[0]);
         ev.preventDefault();
-    
+
         const response = await fetch('http://localhost:4000/post', {
             method: 'POST',
             body: data,
             credentials: 'include'
         });
         if (response.status !== 200) {
-            alert('Tu post no pudo ser publicado, intentá revisar los campos que llenaste.') // el error será diferente a 200 cuando ya haya un usuario registradio con los mismos campos
+            alert('Tu post no pudo ser publicado, intentá revisar los campos que llenaste.');
         } else {
-            alert('Tu post ha sido creado.')
+            alert('Tu post ha sido creado.');
             setRedirect(true);
         }
     }
 
-    if (redirect){
+    if (redirect) {
         return <Navigate to={'/'} />
     };
 
@@ -59,12 +61,12 @@ export default function CreatePost() {
 
             <input type='summary' placeholder={'Resumen'} value={summary} onChange={ev => {
                 setSummary(ev.target.value)
-            }}/>
-            <input type='file'  onChange={ev =>
-            setFile(ev.target.files)} />
-            
-            <ReactQuill value={content} modules={modules} formats={formats} onChange={newValue => 
-            setContent(newValue)} />
+            }} />
+            <input type='file' onChange={ev =>
+                setFile(ev.target.files)} />
+
+            <ReactQuill value={content} modules={modules} formats={formats} onChange={newValue =>
+                setContent(newValue)} />
 
             <button style={{ marginTop: '10px' }}>Crear Post</button>
 

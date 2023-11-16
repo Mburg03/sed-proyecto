@@ -13,23 +13,35 @@ export default function RegisterPage() {
             e.preventDefault();
         }
     }
-    async function register(ev) { // ev se refiere al evento que sucede cuando hay un OnSubmit en <form>
-        if (userType === "Admin" && secretKey !== "M@rito#2003") {
-            ev.preventDefault();
-            alert("Invalid Admin");
-        } 
+    async function register(ev) {
         ev.preventDefault();
-        const response = await fetch('http://localhost:4000/register', {
-            method: 'POST',
-            body: JSON.stringify({ username, password, userType }),
-            headers: { 'Content-Type': 'application/json' }
-        })
-        if (response.status !== 200) {
-            alert('Tu registro no pudo ser posible.') // el error será diferente a 200 cuando ya haya un usuario registradio con los mismos campos
-        } else {
-            alert('Registrado exitosamente')
+    
+        if (userType === "Admin" && secretKey !== "M@rito#2003") {
+            alert("Invalid Admin");
+            return;
+        }
+    
+        try {
+            const response = await fetch('http://localhost:4000/register', {
+                method: 'POST',
+                body: JSON.stringify({ username, password, userType }),
+                headers: { 'Content-Type': 'application/json' }
+            });
+    
+            const responseData = await response.json(); // Obtener la respuesta en formato JSON
+    
+            if (response.ok) {
+                alert('Registrado exitosamente');
+            } else {
+                alert(`Error en el registro: ${responseData.message || 'Error desconocido'}`);
+            }
+        } catch (error) {
+            console.error('Error al hacer la solicitud:', error);
+            alert('Hubo un problema con la solicitud de registro.');
         }
     }
+    
+
     return (
         <form className="register" onSubmit={register}>
             <h1>Registrarse</h1>

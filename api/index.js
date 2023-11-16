@@ -1,158 +1,257 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const mongoose = require('mongoose');
-const User = require('./models/User');
-const Post = require('./models/Post');
+const { ObjectId, ServerApiVersion } = require('mongodb');
+const MongoClient = require('mongodb').MongoClient;
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');  // token para inicio de sesión
+const jwt = require('jsonwebtoken');
 const multer = require('multer');
-const uploadMiddlewares = multer({ dest: './uploads/' }); // directorio en donde se guardaran los posts
+const uploadMiddlewares = multer({ dest: './uploads/' });
 const fs = require('fs');
+const cookieParser = require('cookie-parser');
 
-const salt = bcrypt.genSaltSync(10); // encriptación de la contraseña, método
+const salt = bcrypt.genSaltSync(10);
 const secret = 'asdasdasdasdasge';
-const cookieParser = require('cookie-parser'); // requerimiento para poder recibir cookies y leerlas
 
-
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }))
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
-mongoose.connect('mongodb+srv://mburgosgit003:rt40vh2SFKCCiZBX@cluster0.mgrscfy.mongodb.net/?retryWrites=true&w=majority'); // conectando a la base de datos
 
+const url = 'mongodb+srv://mburgosgit003:edckdB9ospbAvn5C@cluster0.mgrscfy.mongodb.net/?retryWrites=true&w=majority'; // Reemplaza con tu URI de conexión real
+const client = new MongoClient(url);
+
+let db, users, posts;
+async function run() {
+  try {
+    await client.connect();
+    console.log("Conectado exitosamente a MongoDB");
+
+    db = client.db('Blog-bd');
+    users = db.collection('users');
+    posts = db.collection('posts');
+    // Aquí puedes seguir con la configuración de tus rutas de Express u otras operaciones
+
+  } catch (err) {
+    console.error("Error al conectar a MongoDB:", err);
+  }
+}
+run();
 
 
 app.post('/register', async (req, res) => {
   const { username, password, userType } = req.body;
   try {
-    const userDoc = await User.create({
-      username,
-      password: bcrypt.hashSync(password, salt),
-      userType
-    });
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    const userDoc = await users.insertOne(
+      {
+        username,
+        password: hashedPassword,
+        userType
+      }
+    );
     res.json(userDoc);
+    // Devuelve el documento insertado
   } catch (e) {
     console.log(e);
-    res.status(400).json(e);
+    res.status(400).json(e.toString());
   }
 });
 
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const userDoc = await User.findOne({ username });
-  const passOk = bcrypt.compareSync(password, userDoc.password);
-  if (passOk) {
-    // logged in
-    jwt.sign({ username, id: userDoc._id, userType: userDoc.userType }, secret, {}, (err, token) => {
-      if (err) throw err;
+  try {
+    const userDoc = await users.findOne({ username });
+    if (!userDoc) {
+      return res.status(400).json('Usuario no encontrado');
+    }
+
+    const passOk = bcrypt.compareSync(password, userDoc.password);
+    if (passOk) {
+      const token = jwt.sign({
+        username,
+        id: userDoc._id,
+        userType: userDoc.userType
+      }, secret);
+
       res.cookie('token', token).json({
         id: userDoc._id,
         username,
         userType: userDoc.userType
       });
-    });
-  } else {
-    res.status(400).json('wrong credentials');
+    } else {
+      res.status(400).json('Credenciales incorrectas');
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json(e.toString());
   }
 });
-// recibiendo las cookies del usuario
-app.get('/profile', (req, res) => {
+
+// ... 
+
+app.get('/profile', async (req, res) => {
   const { token } = req.cookies;
 
-  jwt.verify(token, secret, {}, (err, info) => {
-    if (err) throw err;
-    res.json(info);
-  });
+  try {
+    const decoded = jwt.verify(token, secret);
+    res.json(decoded);
+  } catch (err) {
+    console.log("Usuario sin iniciar sesión.");
+    res.status(401).json({ error: 'No autenticado' });
+  }
 });
+
+// ...
 
 app.post('/logout', (req, res) => {
   res.clearCookie('token').json('ok');
 });
 
+// ...
+
 app.post('/post', uploadMiddlewares.single('file'), async (req, res) => {
   try {
+    // Asumiendo que la subida del archivo y la obtención del nuevo path es correcta.
     const { originalname, path } = req.file;
     const parts = originalname.split('.');
     const ext = parts[parts.length - 1];
     const newPath = path + '.' + ext;
-    const { token } = req.cookies;
-
     fs.renameSync(path, newPath);
 
-    jwt.verify(token, secret, {}, async (err, info) => {
-      if (err) {
-        res.status(401).json({ error: 'Token no válido.' });
-      };
-      const { title, summary, content } = req.body;
-      const postDoc = await Post.create({
-        title,
-        summary,
-        content,
-        cover: newPath,
-        author: info.id
-      });
-      res.json(postDoc);
-    });
+    // Verificas el token una vez y usas el resultado (decoded).
+    const decoded = jwt.verify(req.cookies.token, secret);
+
+    // No necesitas verificar el token una segunda vez, así que elimina esta parte.
+    // Simplemente continúa con la creación del documento post.
+    const { title, summary, content } = req.body;
+    const postDoc = {
+      title,
+      summary,
+      content,
+      cover: newPath,
+      author: new ObjectId(decoded.id), // Asegúrate de que decoded.id exista.
+      createdAt: new Date(), // Añade la fecha y hora actuales
+    };
+    const result = await posts.insertOne(postDoc);
+    res.json(result); // Devuelve el documento insertado.
   } catch (error) {
+    // El catch ahora atrapará tanto los errores de la inserción como los posibles errores de jwt.verify.
+    console.log(error);
     res.status(500).json({ error: 'Error al crear el post.' });
   }
 });
 
 
+// ...
+
 app.get('/post', async (req, res) => {
-  const posts = await Post.find().populate('author', ['username']).sort({ createdAt: -1 }).limit(20);
-  res.json(posts);
+  try {
+    let postDocs = await posts.find({})
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .toArray();
+
+    // Para cada post, busca la información del autor y añádela al post.
+    postDocs = await Promise.all(postDocs.map(async post => {
+      const authorInfo = await users.findOne({ _id: post.author }, { projection: { username: 1 } });
+      return { ...post, authorName: authorInfo ? authorInfo.username : "Desconocido" };
+    }));
+
+    res.json(postDocs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error.toString());
+  }
 });
+
+
+// ...
 
 app.get('/post/:id', async (req, res) => {
   const { id } = req.params;
-  postDoc = await Post.findById(id).populate('author', ['username']);
-  res.json(postDoc);
+  try {
+    // Asegúrate de convertir el ID de string a un ObjectId de MongoDB
+    const postDoc = await posts.findOne({ _id: new ObjectId(id) });
+
+    // Si el post existe, busca la información del autor.
+    if (postDoc) {
+      const authorInfo = await users.findOne({ _id: postDoc.author }, { projection: { username: 1 } });
+      
+      // Agrega la información del autor al documento del post.
+      // Crea una nueva propiedad en postDoc para el autor.
+      postDoc.authorInfo = authorInfo;
+
+      res.json(postDoc);
+    } else {
+      res.status(404).json({ error: "Post no encontrado" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al buscar el post.' });
+  }
 });
+
+
+// ...
 
 app.get("/getAllUser", async (req, res) => {
   try {
-    const allUser = await User.find({});
-    res.send({ status: "ok", data: allUser })
+    const allUser = await users.find({}).toArray();
+    res.json({ status: "ok", data: allUser });
   } catch (error) {
     console.log(error);
+    res.status(500).json(error.toString());
   }
 });
 
+// ...
+
 app.get("/getAllPosts", async (req, res) => {
   try {
-    const allPosts = await Post.find({});
-    res.send({ status: "ok", data: allPosts })
+    const allPosts = await posts.find({}).toArray();
+    res.json({ status: "ok", data: allPosts });
   } catch (error) {
     console.log(error);
+    res.status(500).json(error.toString());
   }
-})
+});
 
+// ...
 
 app.post("/deleteUser", async (req, res) => {
   const { userid } = req.body;
   try {
-    const result = await User.deleteOne({ _id: userid });
-    console.log(result);
-    res.send({ status: "Ok", data: "Eliminado" });
+    const result = await users.deleteOne({ _id: new ObjectId(userid) });
+    if (result.deletedCount === 1) {
+      res.json({ status: "Ok", data: "Eliminado" });
+    } else {
+      res.status(404).json({ status: "Error", data: "Usuario no encontrado" });
+    }
   } catch (error) {
     console.log(error);
-    res.status(500).send({ status: "Error", data: error.message });
+    res.status(500).json({ status: "Error", data: error.message });
   }
 });
+
+// ...
 
 app.post("/deletePost", async (req, res) => {
   const { postid } = req.body;
   try {
-    const result = await Post.deleteOne({ _id: postid });
-    console.log(result);
-    res.send({ status: "Ok", data: "Eliminado" });
+    const result = await posts.deleteOne({ _id: new ObjectId(postid) });
+    if (result.deletedCount === 1) {
+      res.json({ status: "Ok", data: "Eliminado" });
+    } else {
+      res.status(404).json({ status: "Error", data: "Post no encontrado" });
+    }
   } catch (error) {
     console.log(error);
-    res.status(500).send({ status: "Error", data: error.message });
+    res.status(500).json({ status: "Error", data: error.message });
   }
 });
+
+// ...
 
 app.listen(4000);
