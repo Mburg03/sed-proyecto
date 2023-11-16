@@ -150,7 +150,6 @@ app.get('/post', async (req, res) => {
   try {
     let postDocs = await posts.find({})
       .sort({ createdAt: -1 })
-      .limit(20)
       .toArray();
 
     // Para cada post, busca la información del autor y añádela al post.
@@ -166,6 +165,27 @@ app.get('/post', async (req, res) => {
   }
 });
 
+app.get("/getAllPosts", async (req, res) => {
+  try {
+    let allPosts = await posts.find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    // Para cada post, busca la información del autor y añádela al post.
+    allPosts = await Promise.all(allPosts.map(async post => {
+      const authorInfo = await users.findOne({ _id: post.author }, { projection: { username: 1 } });
+      return { ...post, authorName: authorInfo ? authorInfo.username : "Desconocido" };
+    }));
+
+    res.json(allPosts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json(error.toString());
+  }
+
+});
+
+
 
 // ...
 
@@ -178,7 +198,7 @@ app.get('/post/:id', async (req, res) => {
     // Si el post existe, busca la información del autor.
     if (postDoc) {
       const authorInfo = await users.findOne({ _id: postDoc.author }, { projection: { username: 1 } });
-      
+
       // Agrega la información del autor al documento del post.
       // Crea una nueva propiedad en postDoc para el autor.
       postDoc.authorInfo = authorInfo;
@@ -208,15 +228,6 @@ app.get("/getAllUser", async (req, res) => {
 
 // ...
 
-app.get("/getAllPosts", async (req, res) => {
-  try {
-    const allPosts = await posts.find({}).toArray();
-    res.json({ status: "ok", data: allPosts });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json(error.toString());
-  }
-});
 
 // ...
 

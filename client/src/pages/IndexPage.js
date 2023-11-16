@@ -37,7 +37,7 @@ export default function IndexPage() {
                     <h3>Posts autorizados</h3>
                     <div className="admin-posts-display">
                         {posts.length > 0 && posts.map(post => (
-                            <Post key={post.id} {...post} />
+                            <Post key={post.id} {...post} author={post.authorName} />
                         ))}
                     </div>
 

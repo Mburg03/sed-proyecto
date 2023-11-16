@@ -26,9 +26,17 @@ export default function AdminHome({ userData }) {
         fetch("http://localhost:4000/getAllPosts", {
             method: "GET"
         }).then((res) => res.json()).then((data) => {
-            console.log(data, "postData");
-            setPostData(data.data);
-        });
+
+            if (Array.isArray(data)) {
+                    setPostData(data);
+                } else {
+                    console.error("La respuesta del servidor no contiene un array de posts:", data);
+
+                }
+            }).catch(error => {
+                console.error("Error al obtener los posts:", error);
+            });
+
     };
 
     const deleteUser = (id, username) => {
@@ -72,6 +80,7 @@ export default function AdminHome({ userData }) {
 
         }
     };
+    console.log(postData);
 
     return (
         <div className="users-information">
@@ -110,7 +119,7 @@ export default function AdminHome({ userData }) {
                         return (
                             <tr>
                                 <td>{i._id}</td>
-                                <td>{i.author}</td>
+                                <td>{i.authorName}</td>
                                 <td>{i.createdAt}</td>
                                 <td>{i.title}</td>
                                 <td><FontAwesomeIcon icon={faTrash} onClick={() => deletePost(i._id)}
