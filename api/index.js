@@ -11,17 +11,18 @@ const fs = require('fs');
 const cookieParser = require('cookie-parser');
 
 const salt = bcrypt.genSaltSync(10);
-const secret = 'asdasdasdasdasge';
+const secret = 'asdasdasdasdasge'; // valor de encriptacción para la contraseña
 
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-const url = 'mongodb+srv://mburgosgit003:edckdB9ospbAvn5C@cluster0.mgrscfy.mongodb.net/?retryWrites=true&w=majority'; // Reemplaza con tu URI de conexión real
+const url = 'mongodb+srv://mburgosgit003:edckdB9ospbAvn5C@cluster0.mgrscfy.mongodb.net/?retryWrites=true&w=majority';
 const client = new MongoClient(url);
-
 let db, users, posts;
+
+// Nos conectamos a la base de datos
 async function run() {
   try {
     await client.connect();
@@ -30,7 +31,6 @@ async function run() {
     db = client.db('Blog-bd');
     users = db.collection('users');
     posts = db.collection('posts');
-    // Aquí puedes seguir con la configuración de tus rutas de Express u otras operaciones
 
   } catch (err) {
     console.error("Error al conectar a MongoDB:", err);
@@ -38,12 +38,12 @@ async function run() {
 }
 run();
 
-
+// Ruta para registrarse
 app.post('/register', async (req, res) => {
   const { username, password, userType } = req.body;
   try {
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    const userDoc = await users.insertOne(
+    const hashedPassword = bcrypt.hashSync(password, salt); // encriptamos la contraseña
+    const userDoc = await users.insertOne( // insertamos el nuevo usuario a la coleccion "users"
       {
         username,
         password: hashedPassword,
@@ -51,35 +51,34 @@ app.post('/register', async (req, res) => {
       }
     );
     res.json(userDoc);
-    // Devuelve el documento insertado
   } catch (e) {
     console.log(e);
     res.status(400).json(e.toString());
   }
 });
 
-
+// Ruta para iniciar sesión
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const userDoc = await users.findOne({ username });
+    const userDoc = await users.findOne({ username }); // buscamos el usuario en base al username que tenga en la colección users
     if (!userDoc) {
       return res.status(400).json('Usuario no encontrado');
     }
 
-    const passOk = bcrypt.compareSync(password, userDoc.password);
+    const passOk = bcrypt.compareSync(password, userDoc.password); // compaamos la contraseña encriptada
     if (passOk) {
       const token = jwt.sign({
         username,
         id: userDoc._id,
         userType: userDoc.userType
-      }, secret);
+      }, secret); // creamos el token único para el usuario que inicia sesión
 
       res.cookie('token', token).json({
         id: userDoc._id,
         username,
         userType: userDoc.userType
-      });
+      }); // mandamos el token mediante cookies para no mandar información mediante el url
     } else {
       res.status(400).json('Credenciales incorrectas');
     }
@@ -89,13 +88,11 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ... 
-
+// Ruta para saber cuando un usuario ha iniciado o no sesión asi dar el Home para visitantes o para usuarios
 app.get('/profile', async (req, res) => {
-  const { token } = req.cookies;
-
+  const { token } = req.cookies; // obtenemos el token de las cookies
   try {
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, secret); // verificamos
     res.json(decoded);
   } catch (err) {
     console.log("Usuario sin iniciar sesión.");
@@ -103,48 +100,37 @@ app.get('/profile', async (req, res) => {
   }
 });
 
-// ...
-
+// Ruta para cerrar sesión
 app.post('/logout', (req, res) => {
   res.clearCookie('token').json('ok');
 });
 
-// ...
-
+// Ruta para crear un post
 app.post('/post', uploadMiddlewares.single('file'), async (req, res) => {
   try {
-    // Asumiendo que la subida del archivo y la obtención del nuevo path es correcta.
     const { originalname, path } = req.file;
     const parts = originalname.split('.');
     const ext = parts[parts.length - 1];
     const newPath = path + '.' + ext;
     fs.renameSync(path, newPath);
-
-    // Verificas el token una vez y usas el resultado (decoded).
     const decoded = jwt.verify(req.cookies.token, secret);
-
-    // No necesitas verificar el token una segunda vez, así que elimina esta parte.
-    // Simplemente continúa con la creación del documento post.
     const { title, summary, content } = req.body;
     const postDoc = {
       title,
       summary,
       content,
       cover: newPath,
-      author: new ObjectId(decoded.id), // Asegúrate de que decoded.id exista.
-      createdAt: new Date(), // Añade la fecha y hora actuales
+      author: new ObjectId(decoded.id),
+      createdAt: new Date(),  // Aqui a diferencia de mongoose debemos crear un objeto Date en el esquema.
     };
-    const result = await posts.insertOne(postDoc);
-    res.json(result); // Devuelve el documento insertado.
+    const result = await posts.insertOne(postDoc); // insertamos el post en la colección "posts"
+    res.json(result);
   } catch (error) {
-    // El catch ahora atrapará tanto los errores de la inserción como los posibles errores de jwt.verify.
     console.log(error);
     res.status(500).json({ error: 'Error al crear el post.' });
   }
 });
 
-
-// ...
 
 app.get('/post', async (req, res) => {
   try {
@@ -152,7 +138,7 @@ app.get('/post', async (req, res) => {
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Para cada post, busca la información del autor y añádela al post.
+    // Para cada post, busca la información del autor y  la añade al post usando map
     postDocs = await Promise.all(postDocs.map(async post => {
       const authorInfo = await users.findOne({ _id: post.author }, { projection: { username: 1 } });
       return { ...post, authorName: authorInfo ? authorInfo.username : "Desconocido" };
@@ -165,13 +151,13 @@ app.get('/post', async (req, res) => {
   }
 });
 
+
 app.get("/getAllPosts", async (req, res) => {
   try {
     let allPosts = await posts.find({})
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Para cada post, busca la información del autor y añádela al post.
     allPosts = await Promise.all(allPosts.map(async post => {
       const authorInfo = await users.findOne({ _id: post.author }, { projection: { username: 1 } });
       return { ...post, authorName: authorInfo ? authorInfo.username : "Desconocido" };
@@ -186,13 +172,11 @@ app.get("/getAllPosts", async (req, res) => {
 });
 
 
-
-// ...
-
+// Conseguimos un único post en base a su id 
 app.get('/post/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    // Asegúrate de convertir el ID de string a un ObjectId de MongoDB
+    // Convertimos el ID de string a un ObjectId de MongoDB
     const postDoc = await posts.findOne({ _id: new ObjectId(id) });
 
     // Si el post existe, busca la información del autor.
@@ -215,7 +199,6 @@ app.get('/post/:id', async (req, res) => {
 
 
 // ...
-
 app.get("/getAllUser", async (req, res) => {
   try {
     const allUser = await users.find({}).toArray();
@@ -226,11 +209,8 @@ app.get("/getAllUser", async (req, res) => {
   }
 });
 
-// ...
-
 
 // ...
-
 app.post("/deleteUser", async (req, res) => {
   const { userid } = req.body;
   try {
@@ -246,8 +226,8 @@ app.post("/deleteUser", async (req, res) => {
   }
 });
 
-// ...
 
+// ...
 app.post("/deletePost", async (req, res) => {
   const { postid } = req.body;
   try {
@@ -263,6 +243,5 @@ app.post("/deletePost", async (req, res) => {
   }
 });
 
-// ...
 
 app.listen(4000);
