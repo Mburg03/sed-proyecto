@@ -9,17 +9,49 @@ const multer = require('multer');
 const uploadMiddlewares = multer({ dest: './uploads/' });
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
-const salt = bcrypt.genSaltSync(10);
-const secret = 'asdasdasdasdasge'; // valor de encriptacción para la contraseña
 
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-const url = 'mongodb+srv://mburgosgit003:edckdB9ospbAvn5C@cluster0.mgrscfy.mongodb.net/?retryWrites=true&w=majority';
+const salt = bcrypt.genSaltSync(10);
+const secret = process.env.JWT_SECRET; // encriptacción
+const url = process.env.URL_SECRET;
 const client = new MongoClient(url);
+const adminSecretKey = process.env.ADMIN_SECRET_KEY;
+
+const rateLimitWindowMs = 15 * 60 * 1000; // 15 minutos
+const maxRequestsPerWindow = 15; // Máximo de 100 solicitudes por IP en cada ventana de tiempo
+const requestCounts = {}; // Almacena el conteo de solicitudes por IP
+
+// Middleware de tasa de límite
+const rateLimit = (req, res, next) => {
+  const ip = req.ip;
+  const currentTime = Date.now();
+
+  if (!requestCounts[ip]) {
+    requestCounts[ip] = {
+      count: 1,
+      startTime: currentTime
+    };
+  } else {
+    requestCounts[ip].count++;
+    if (currentTime - requestCounts[ip].startTime > rateLimitWindowMs) {
+      // Reinicia el conteo y la ventana de tiempo
+      requestCounts[ip] = {
+        count: 1,
+        startTime: currentTime
+      };
+    } else if (requestCounts[ip].count > maxRequestsPerWindow) {
+      return res.status(429).json({ error: "Demasiadas solicitudes. Por favor, inténtalo de nuevo más tarde." });
+    }
+  }
+  next();
+};
+
 let db, users, posts;
 
 // Nos conectamos a la base de datos
@@ -39,52 +71,79 @@ async function run() {
 run();
 
 // Ruta para registrarse
-app.post('/register', async (req, res) => {
-  const { username, password, userType } = req.body;
-  try {
-    const hashedPassword = bcrypt.hashSync(password, salt); // encriptamos la contraseña
-    const userDoc = await users.insertOne( // insertamos el nuevo usuario a la coleccion "users"
-      {
-        username,
-        password: hashedPassword,
-        userType
-      }
-    );
-    res.json(userDoc);
-  } catch (e) {
-    console.log(e);
-    res.status(400).json(e.toString());
+app.post('/register', rateLimit, async (req, res) => {
+  const { username, password, userType, secretKey } = req.body;
+  const new_salt = bcrypt.genSaltSync(10);
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  if (!username || typeof username !== 'string' || username.length < 3 || username.length > 10) {
+    return res.status(400).json({ error: 'Nombre de usuario inválido. Debe tener entre 3 y 10 caracteres.' });
+  }
+  if (!passwordRegex.test(req.body.password)) {
+    return res.status(400).json({ error: 'La contraseña no cumple con los requisitos de seguridad.' });
+  }
+  if (userType === "Admin" && secretKey !== adminSecretKey) {
+    return res.status(403).json({ error: 'Clave de administrador inválida.' });
+  }
+  if (!userType || !['Admin', 'User'].includes(userType)) {
+    return res.status(400).json({ error: 'Tipo de usuario inválido.' });
+  }
+  else {
+    try {
+      const hashedPassword = bcrypt.hashSync(password, new_salt); // encriptamos la contraseña
+      const userDoc = await users.insertOne( // insertamos el nuevo usuario a la coleccion "users"
+        {
+          username,
+          password: hashedPassword,
+          userType
+        }
+      );
+      res.json(userDoc);
+    } catch (e) {
+      console.log(e);
+      res.status(400).json(e.toString());
+    }
   }
 });
 
+
 // Ruta para iniciar sesión
-app.post('/login', async (req, res) => {
+app.post('/login', rateLimit, async (req, res) => {
   const { username, password } = req.body;
-  try {
-    const userDoc = await users.findOne({ username }); // buscamos el usuario en base al username que tenga en la colección users
-    if (!userDoc) {
-      return res.status(400).json('Usuario no encontrado');
-    }
 
-    const passOk = bcrypt.compareSync(password, userDoc.password); // compaamos la contraseña encriptada
-    if (passOk) {
-      const token = jwt.sign({
-        username,
-        id: userDoc._id,
-        userType: userDoc.userType
-      }, secret); // creamos el token único para el usuario que inicia sesión
+  if (!username || typeof username !== 'string' || username.length < 3 || username.length > 20) {
+    return res.status(400).json({ error: 'Nombre de usuario inválido.' });
+  }
 
-      res.cookie('token', token).json({
-        id: userDoc._id,
-        username,
-        userType: userDoc.userType
-      }); // mandamos el token mediante cookies para no mandar información mediante el url
-    } else {
-      res.status(400).json('Credenciales incorrectas');
+  if (!password || typeof password !== 'string' || password.length < 6 || password.length > 20) {
+    return res.status(400).json({ error: 'Contraseña inválida.' });
+  } else {
+    try {
+      const userDoc = await users.findOne({ username }); // buscamos el usuario en base al username que tenga en la colección users
+      if (!userDoc) {
+        return res.status(400).json('Usuario no encontrado');
+      }
+
+      const passOk = bcrypt.compareSync(password, userDoc.password); // compaamos la contraseña encriptada
+      if (passOk) {
+        const token = jwt.sign({
+          username,
+          id: userDoc._id,
+          userType: userDoc.userType
+        }, secret, {expiresIn: '30m'}); // creamos el token único para el usuario que inicia sesión
+
+        res.cookie('token', token).json({
+          id: userDoc._id,
+          username,
+          userType: userDoc.userType
+        }); // mandamos el token mediante cookies para no mandar información mediante el url
+      } else {
+        res.status(400).json('Credenciales incorrectas');
+      }
+    } catch (e) {
+      console.error(e);
+      res.status(500).json(e.toString());
     }
-  } catch (e) {
-    console.error(e);
-    res.status(500).json(e.toString());
   }
 });
 
@@ -96,7 +155,11 @@ app.get('/profile', async (req, res) => {
     res.json(decoded);
   } catch (err) {
     console.log("Usuario sin iniciar sesión.");
-    res.status(401).json({ error: 'No autenticado' });
+    if (err.name === "TokenExpiredError") {
+      res.status(401).json({ error: 'Token expirado' });
+    } else {
+      res.status(401).json({ error: 'No autenticado' });
+    }
   }
 });
 
@@ -106,31 +169,57 @@ app.post('/logout', (req, res) => {
 });
 
 // Ruta para crear un post
-app.post('/post', uploadMiddlewares.single('file'), async (req, res) => {
+app.post('/post', rateLimit, uploadMiddlewares.single('file'), async (req, res) => {
   try {
+    // Asegúrate de que el archivo se haya subido correctamente
+    if (!req.file) {
+      return res.status(400).json({ error: 'Archivo no subido correctamente.' });
+    }
+
     const { originalname, path } = req.file;
     const parts = originalname.split('.');
     const ext = parts[parts.length - 1];
+
+    // Validación del formato del archivo (opcional, basado en tus necesidades)
+    if (ext !== 'webp') {
+      return res.status(400).json({ error: 'Formato de archivo no válido.' });
+    }
+
     const newPath = path + '.' + ext;
     fs.renameSync(path, newPath);
+
     const decoded = jwt.verify(req.cookies.token, secret);
     const { title, summary, content } = req.body;
+
+    // Validaciones del lado del servidor
+    if (!title || title.length < 3) {
+      return res.status(400).json({ error: 'Título inválido.' });
+    }
+
+    if (!summary || summary.length < 10) {
+      return res.status(400).json({ error: 'Resumen inválido.' });
+    }
+
+    if (!content || content.length < 20) {
+      return res.status(400).json({ error: 'Contenido inválido.' });
+    }
+
     const postDoc = {
       title,
       summary,
       content,
       cover: newPath,
       author: new ObjectId(decoded.id),
-      createdAt: new Date(),  // Aqui a diferencia de mongoose debemos crear un objeto Date en el esquema.
+      createdAt: new Date(),
     };
-    const result = await posts.insertOne(postDoc); // insertamos el post en la colección "posts"
+
+    const result = await posts.insertOne(postDoc);
     res.json(result);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Error al crear el post.' });
   }
 });
-
 
 app.get('/post', async (req, res) => {
   try {

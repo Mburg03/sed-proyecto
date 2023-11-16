@@ -16,7 +16,6 @@ export default function AdminHome({ userData }) {
         fetch("http://localhost:4000/getAllUser", {
             method: "GET"
         }).then((res) => res.json()).then((data) => {
-            console.log(data, "userData");
             setData(data.data);
         });
     };
@@ -30,11 +29,11 @@ export default function AdminHome({ userData }) {
             if (Array.isArray(data)) {
                     setPostData(data);
                 } else {
-                    console.error("La respuesta del servidor no contiene un array de posts:", data);
+                    console.error("La respuesta del servidor no es la esperada.");
 
                 }
             }).catch(error => {
-                console.error("Error al obtener los posts:", error);
+                console.error("Error al obtener los posts");
             });
 
     };
@@ -80,7 +79,6 @@ export default function AdminHome({ userData }) {
 
         }
     };
-    console.log(postData);
 
     return (
         <div className="users-information">

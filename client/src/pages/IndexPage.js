@@ -12,19 +12,17 @@ export default function IndexPage() {
     useEffect(() => {
         fetch('http://localhost:4000/post').then(response => {
             response.json().then(posts => {
-                console.log(posts);
                 if (Array.isArray(posts)) {
                     setPosts(posts);
                 } else {
-                    console.error("La respuesta del servidor no contiene un array de posts:", posts);
+                    console.error("La respuesta del servidor no es la esperada.");
 
                 }
             }).catch(error => {
-                console.error("Error al obtener los posts:", error);
+                console.error("Error al obtener los posts");
             });
         });
     }, []);
-    console.log(posts);
     // Renderizado condicional basado en la información del usuario
     let content;
     if (username) {

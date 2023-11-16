@@ -13,9 +13,8 @@ export default function PostPage() {
                 setPostInfo(postInfo);
             });
         })
-        console.log(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    console.log("Informacion" + postInfo);
     if (!postInfo) return '';
     const post_content = DOMPurify.sanitize(postInfo.content)
     return (

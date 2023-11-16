@@ -36,16 +36,37 @@ export default function CreatePost() {
         data.set("file", files[0]);
         ev.preventDefault();
 
-        const response = await fetch('http://localhost:4000/post', {
-            method: 'POST',
-            body: data,
-            credentials: 'include'
-        });
-        if (response.status !== 200) {
-            alert('Tu post no pudo ser publicado, intentá revisar los campos que llenaste.');
+        // Validaciones básicas
+        if (!title || title.length < 3) {
+            alert("Por favor, proporciona un título válido (mínimo 3 caracteres).");
+            return;
+        }
+
+        if (!summary || summary.length < 10) {
+            alert("Por favor, proporciona un resumen válido (mínimo 10 caracteres).");
+            return;
+        }
+
+        if (!content || content.length < 20) {
+            alert("Por favor, proporciona contenido válido (mínimo 20 caracteres).");
+            return;
+        }
+
+        if (!files || files.length === 0) {
+            alert("Por favor, selecciona un archivo para subir.");
+            return;
         } else {
-            alert('Tu post ha sido creado.');
-            setRedirect(true);
+            const response = await fetch('http://localhost:4000/post', {
+                method: 'POST',
+                body: data,
+                credentials: 'include'
+            });
+            if (response.status !== 200) {
+                alert('Tu post no pudo ser publicado, intentá revisar los campos que llenaste.');
+            } else {
+                alert('Tu post ha sido creado.');
+                setRedirect(true);
+            }
         }
     }
 
