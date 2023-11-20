@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
+import Federico from "./config";
+
 
 export default function Post({ _id, title, summary, cover, content, createdAt, author }) {
-
+    const federico = Federico.SECRET_API;
     return (
         <div className='post'>
             <div className='image'>
                 <Link to={`/post/${_id}`}>
-                    <img src={'http://192.168.86.171:4000/' + cover} alt='reference'></img>
-                </Link>
+                    <img src={`http://${federico}:4000/` + cover} alt='reference'></img>
+                </Link>-*
             </div>
             <div className='texts'>
                 <Link to={`/post/${_id}`}>

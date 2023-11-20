@@ -2,15 +2,17 @@ import { useContext, useEffect, useState } from "react"
 import Post from "../Post"
 import { UserContext } from "../UserContext";
 import AdminHome from "./adminHome";
+import Federico from "../config"
 
 export default function IndexPage() {
+    const federico = Federico.SECRET_API;
     const [posts, setPosts] = useState([]);
     const { userInfo } = useContext(UserContext);
     const isAdmin = userInfo?.userType === "Admin";
     const username = userInfo?.username;
 
     useEffect(() => {
-        fetch('http://192.168.86.171:4000/post').then(response => {
+        fetch(`http://${federico}:4000/post`).then(response => {
             response.json().then(posts => {
                 if (Array.isArray(posts)) {
                     setPosts(posts);

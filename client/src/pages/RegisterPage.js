@@ -1,6 +1,8 @@
 import { useState } from "react";
+import Federico from "../config";
 
 export default function RegisterPage() {
+    const federico = Federico.SECRET_API;
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [userType, setUserType] = useState("User");
@@ -22,7 +24,7 @@ export default function RegisterPage() {
 
         else {
             try {
-                const response = await fetch('http://192.168.86.171:4000/register', {
+                const response = await fetch(`http://${federico}:4000/register`, {
                     method: 'POST',
                     body: JSON.stringify({ username, password, userType, secretKey }),
                     headers: { 'Content-Type': 'application/json' }

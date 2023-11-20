@@ -1,9 +1,11 @@
 import { useContext, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { UserContext } from "../UserContext";
+import Federico  from "../config";
 
 
 export default function LoginPage() {
+    const federico = Federico.SECRET_API;
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [redirect, setRedirect] = useState(false); // redireccionar a Home
@@ -21,7 +23,7 @@ export default function LoginPage() {
             alert("Contraseña inválida.");
             return;
         } else {
-            const response = await fetch('http://192.168.86.171:4000/login', {
+            const response = await fetch(`http://${federico}:4000/login`, {
                 method: 'POST',
                 body: JSON.stringify({ username, password }),
                 headers: {'Content-Type': 'application/json'},

@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 
-app.use(cors({ credentials: true, origin: 'http://192.168.86.171:3000' }));
+app.use(cors({ credentials: true, origin: 'http://172.20.10.2:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));

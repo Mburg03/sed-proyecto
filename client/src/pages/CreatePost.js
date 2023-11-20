@@ -2,6 +2,7 @@ import { useState } from "react";
 import ReactQuill from "react-quill"
 import 'react-quill/dist/quill.snow.css';
 import { Navigate } from "react-router-dom";
+import Federico from "../config"
 
 const modules = {
     toolbar: [
@@ -30,6 +31,7 @@ export default function CreatePost() {
 
     async function createNewPost(ev) {
         const data = new FormData();
+        const federico = Federico.SECRET_API;
         data.set("title", title);
         data.set("summary", summary);
         data.set("content", content);
@@ -56,7 +58,7 @@ export default function CreatePost() {
             alert("Por favor, selecciona un archivo para subir.");
             return;
         } else {
-            const response = await fetch('http://192.168.86.171:4000/post', {
+            const response = await fetch(`http://${federico}:4000/post`, {
                 method: 'POST',
                 body: data,
                 credentials: 'include'

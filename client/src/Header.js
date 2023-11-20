@@ -1,14 +1,16 @@
 import { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { UserContext } from "./UserContext";
+import Federico from "./config";
 
 export default function Header() {
   const { setUserInfo, userInfo, isLoading, setIsLoading } = useContext(UserContext);
   const isAdmin = userInfo?.userType === "Admin";
+  const federico = Federico.SECRET_API;    
 
   useEffect(() => {
     setIsLoading(true);
-    fetch('http://192.168.86.171:4000/profile', {
+    fetch(`http://${federico}:4000/profile`, {
       credentials: 'include'
     })
       .then(response => response.json())
@@ -24,7 +26,7 @@ export default function Header() {
 
 
   function logout() {
-    fetch('http://192.168.86.171:4000/logout', {
+    fetch(`http://${federico}:4000/logout`, {
       credentials: 'include',
       method: 'POST'
     }).then(() => {

@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import DOMPurify from 'dompurify';
 import { formatISO9075 } from "date-fns";
-
+import Federico from "../config";
 
 export default function PostPage() {
+    const federico = Federico.SECRET_API;
     const [postInfo, setPostInfo] = useState(null);
     const { id } = useParams();
     useEffect(() => {
-        fetch(`http://192.168.86.171:4000/post/${id}`).then(response => {
+        fetch(`http://${federico}/post/${id}`).then(response => {
             response.json().then(postInfo => {
                 setPostInfo(postInfo);
             });
@@ -23,7 +24,7 @@ export default function PostPage() {
             <time>{formatISO9075(new Date(postInfo.createdAt))}</time>
             <div className="author">Escrito por: @{postInfo.authorInfo.username}</div>
             <div className="image">
-                <img src={`http://192.168.86.171:4000/${postInfo.cover}`} alt="user"/>
+                <img src={`http://${federico}/${postInfo.cover}`} alt="user"/>
             </div>
             <div className="content" dangerouslySetInnerHTML={{__html:post_content}}/>
             
