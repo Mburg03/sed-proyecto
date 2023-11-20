@@ -20,12 +20,9 @@ export default function RegisterPage() {
             return;
         }
 
-        if (userType === "Admin" && secretKey !== "M@rito#2003") {
-            alert("Clave de administrador inválida.");
-            return;
-        } else {
+        else {
             try {
-                const response = await fetch('http://localhost:4000/register', {
+                const response = await fetch('http://192.168.86.171:4000/register', {
                     method: 'POST',
                     body: JSON.stringify({ username, password, userType, secretKey }),
                     headers: { 'Content-Type': 'application/json' }

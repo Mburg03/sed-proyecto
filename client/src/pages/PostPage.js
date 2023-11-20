@@ -8,7 +8,7 @@ export default function PostPage() {
     const [postInfo, setPostInfo] = useState(null);
     const { id } = useParams();
     useEffect(() => {
-        fetch(`http://localhost:4000/post/${id}`).then(response => {
+        fetch(`http://192.168.86.171:4000/post/${id}`).then(response => {
             response.json().then(postInfo => {
                 setPostInfo(postInfo);
             });
@@ -23,7 +23,7 @@ export default function PostPage() {
             <time>{formatISO9075(new Date(postInfo.createdAt))}</time>
             <div className="author">Escrito por: @{postInfo.authorInfo.username}</div>
             <div className="image">
-                <img src={`http://localhost:4000/${postInfo.cover}`} alt="user"/>
+                <img src={`http://192.168.86.171:4000/${postInfo.cover}`} alt="user"/>
             </div>
             <div className="content" dangerouslySetInnerHTML={{__html:post_content}}/>
             

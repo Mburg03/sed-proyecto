@@ -56,7 +56,7 @@ export default function CreatePost() {
             alert("Por favor, selecciona un archivo para subir.");
             return;
         } else {
-            const response = await fetch('http://localhost:4000/post', {
+            const response = await fetch('http://192.168.86.171:4000/post', {
                 method: 'POST',
                 body: data,
                 credentials: 'include'

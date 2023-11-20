@@ -21,7 +21,7 @@ export default function LoginPage() {
             alert("Contraseña inválida.");
             return;
         } else {
-            const response = await fetch('http://localhost:4000/login', {
+            const response = await fetch('http://192.168.86.171:4000/login', {
                 method: 'POST',
                 body: JSON.stringify({ username, password }),
                 headers: {'Content-Type': 'application/json'},

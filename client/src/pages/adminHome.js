@@ -13,7 +13,7 @@ export default function AdminHome({ userData }) {
     }, []);
 
     const getAllUser = () => {
-        fetch("http://localhost:4000/getAllUser", {
+        fetch("http://192.168.86.171:4000/getAllUser", {
             method: "GET"
         }).then((res) => res.json()).then((data) => {
             setData(data.data);
@@ -22,7 +22,7 @@ export default function AdminHome({ userData }) {
 
 
     const getAllPost = () => {
-        fetch("http://localhost:4000/getAllPosts", {
+        fetch("http://192.168.86.171:4000/getAllPosts", {
             method: "GET"
         }).then((res) => res.json()).then((data) => {
 
@@ -40,7 +40,7 @@ export default function AdminHome({ userData }) {
 
     const deleteUser = (id, username) => {
         if (window.confirm(`Estás seguro de querer eliminar al usario ${username}`)) {
-            fetch("http://localhost:4000/deleteUser", {
+            fetch("http://192.168.86.171:4000/deleteUser", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export default function AdminHome({ userData }) {
 
     const deletePost = (id) => {
         if (window.confirm("¿Estás seguro de eliminar este post?")) {
-            fetch("http://localhost:4000/deletePost", {
+            fetch("http://192.168.86.171:4000/deletePost", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

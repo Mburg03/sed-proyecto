@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.use(cors({ credentials: true, origin: 'http://192.168.86.171:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
@@ -24,7 +24,7 @@ const client = new MongoClient(url);
 const adminSecretKey = process.env.ADMIN_SECRET_KEY;
 
 const rateLimitWindowMs = 15 * 60 * 1000; // 15 minutos
-const maxRequestsPerWindow = 15; // Máximo de 100 solicitudes por IP en cada ventana de tiempo
+const maxRequestsPerWindow = 10; // Máximo de 100 solicitudes por IP en cada ventana de tiempo
 const requestCounts = {}; // Almacena el conteo de solicitudes por IP
 
 // Middleware de tasa de límite
@@ -115,7 +115,7 @@ app.post('/login', rateLimit, async (req, res) => {
     return res.status(400).json({ error: 'Nombre de usuario inválido.' });
   }
 
-  if (!password || typeof password !== 'string' || password.length < 6 || password.length > 20) {
+  if (!password || typeof password !== 'string' || password.length > 20) {
     return res.status(400).json({ error: 'Contraseña inválida.' });
   } else {
     try {

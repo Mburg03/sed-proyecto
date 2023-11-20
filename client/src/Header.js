@@ -8,7 +8,7 @@ export default function Header() {
 
   useEffect(() => {
     setIsLoading(true);
-    fetch('http://localhost:4000/profile', {
+    fetch('http://192.168.86.171:4000/profile', {
       credentials: 'include'
     })
       .then(response => response.json())
@@ -24,7 +24,7 @@ export default function Header() {
 
 
   function logout() {
-    fetch('http://localhost:4000/logout', {
+    fetch('http://192.168.86.171:4000/logout', {
       credentials: 'include',
       method: 'POST'
     }).then(() => {

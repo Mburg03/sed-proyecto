@@ -10,7 +10,7 @@ export default function IndexPage() {
     const username = userInfo?.username;
 
     useEffect(() => {
-        fetch('http://localhost:4000/post').then(response => {
+        fetch('http://192.168.86.171:4000/post').then(response => {
             response.json().then(posts => {
                 if (Array.isArray(posts)) {
                     setPosts(posts);
